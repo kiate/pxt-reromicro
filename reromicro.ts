@@ -34,13 +34,13 @@ namespace reromicro {
     //==============================================
     let trig = DigitalPin.P2
     let echo = DigitalPin.P2
-    let maxCmDistance = 255
+    let maxCmDistance = 300
     let const_2divspeed = 58
     
     // special tuning for microbit v1 
     // to get a more accurate value in cm
     if (board_ver == "1") {
-        const_2divspeed = 40
+        const_2divspeed = 38
     }
     
     /**
@@ -63,11 +63,13 @@ namespace reromicro {
         pins.digitalWritePin(trig, 0);
 
         // read pulse
-        // add in 5.2ms of deadzone to the maxDuration.
-        const d = pins.pulseIn(echo, PulseValue.High, maxCmDistance * const_2divspeed + 5200); 
-
-        if (d == 0) {
-            return 255
+        const d = pins.pulseIn(echo, PulseValue.High, maxCmDistance * const_2divspeed);
+        
+        basic.pause(18) //to stabilize new sensor's readings
+        if (d == 0) { //when no data received
+            return maxCmDistance
+        } else if (d < (2 * const_2divspeed)) { //when value received falls in deadzone
+            return 2
         }
 
         return Math.idiv(d, const_2divspeed)
