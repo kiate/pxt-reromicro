@@ -220,7 +220,7 @@ namespace reromicro {
     //% leftThreshold.min=0 leftThreshold.max=1500
     //% centerThreshold.min=0 centerThreshold.max=1500
     //% rightThreshold.min=0 rightThreshold.max=1500
-    //% blockGap=20
+    //% blockGap=50
     //% weight=80
     export function LineAdjustThresholds(leftThreshold: number, centerThreshold: number, rightThreshold: number): void {
 
@@ -231,19 +231,38 @@ namespace reromicro {
 
 
     /**
-     * Only use this function once in "on start" if your robot doesn't detect the line properly.
+     * Only use this function once in "on start", and it works on robots with memory chip only.
      * This function sets the threshold value ratio for all IR sensor.
-     * @param ratio value, eg: 30
+     * @param ratio value, eg: 35
      */
     //% subcategory=Sensors
     //% blockId=rero-micro-line-adjustthresholdratio
-    //% block="adjust line sensors threhold ratio: |%ratio|%"
-    //% ratio.min=20 ratio.max=60
-    //% blockGap=20
-    //% weight=80
+    //% block="adjust line sensors threshold ratio: Min <-|%ratio|-> Max"
+    //% ratio.min=10 ratio.max=90
+    //% blockGap=10
+    //% weight=75
     export function LineAdjustThresholdRatio(ratio: number): void {
 
         thresholdRatio = ratio
+        for (let i = 0; i < 3; i++) {
+            // calculate threshold at selected ratio
+            lineSensorThreshold[i] = ((lineSensorMax[i] - lineSensorMin[i]) * thresholdRatio / 100) + lineSensorMin[i]
+        }
+    }
+
+
+    /**
+     * Show saved values via serial output.
+     */
+    //% subcategory=Sensors
+    //% blockId=rero-micro-line-showsavedvalue
+    //% block="show saved values via serial output"
+    //% blockGap=10
+    //% weight=74
+    export function ShowSavedValues(): void {
+        serial.writeLine(`MAX L:${lineSensorMax[LineSensors.Left]} C:${lineSensorMax[LineSensors.Center]} R:${lineSensorMax[LineSensors.Right]}`)
+        serial.writeLine(`MIN L:${lineSensorMin[LineSensors.Left]} C:${lineSensorMin[LineSensors.Center]} R:${lineSensorMin[LineSensors.Right]}`)
+        serial.writeLine(`THR L:${lineSensorThreshold[LineSensors.Left]} C:${lineSensorThreshold[LineSensors.Center]} R:${lineSensorThreshold[LineSensors.Right]}`)
     }
 
 
