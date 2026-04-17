@@ -45,8 +45,8 @@ namespace reromicro {
     
     /**
      * Read distance in centimeters (cm) with ultrasonic sensor.
-     * Distance = 3cm - 255cm.
-     * Note: It returns '255' if distance >255cm or no echo is detected.
+     * Distance = 3cm - 300cm.
+     * Note: It returns '300' if distance >300cm or no echo is detected.
      */
     //% subcategory=Sensors
     //% blockId=rero-micro-read-ultrasonic block="ultrasonic distance(cm)"
@@ -104,6 +104,7 @@ namespace reromicro {
     let lineSensorMin = [0, 0, 0]
     let lineSensorValues = [0, 0, 0]
     let lineSensorThreshold = [500, 500, 500]
+    let thresholdRatio = 30
     
     // read line sensors max & min values from EEPROM
     let ui32EeData = 0
@@ -114,7 +115,9 @@ namespace reromicro {
             ui32EeData = EE_Read32bit(lineEepromAddress + 4 + (i * 4))
             lineSensorMax[i] = ui32EeData >> 16
             lineSensorMin[i] = ui32EeData & 0xFFFF
-            lineSensorThreshold[i] = ((lineSensorMax[i] + lineSensorMin[i]) >> 1) - ((lineSensorMax[i] - lineSensorMin[i]) >> 2)
+
+            // calculate threshold at 30-70 ratio
+            lineSensorThreshold[i] = ((lineSensorMax[i] - lineSensorMin[i]) * thresholdRatio / 100) + lineSensorMin[i]
         }
     }
 
@@ -226,6 +229,22 @@ namespace reromicro {
         lineSensorThreshold[2] = rightThreshold
     }
 
+
+    /**
+     * Only use this function once in "on start" if your robot doesn't detect the line properly.
+     * This function sets the threshold value ratio for all IR sensor.
+     * @param ratio value, eg: 30
+     */
+    //% subcategory=Sensors
+    //% blockId=rero-micro-line-adjustthresholdratio
+    //% block="adjust line sensors threhold ratio: |%ratio|%"
+    //% ratio.min=20 ratio.max=60
+    //% blockGap=20
+    //% weight=80
+    export function LineAdjustThresholdRatio(ratio: number): void {
+
+        thresholdRatio = ratio
+    }
 
 
 
